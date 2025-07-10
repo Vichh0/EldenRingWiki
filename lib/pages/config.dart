@@ -33,7 +33,7 @@ class SettingsPage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Text(
-              "Texto de Ejemplo",
+              "A",
               style: TextStyle(fontSize: themeProvider.fontSize),
             ),
           ],
