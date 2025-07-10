@@ -14,6 +14,8 @@ class _BossesPageState extends State<BossesPage> {
   late Future<List<dynamic>> _jefesFuture;
   Map<String, int> likes = {};
   Map<String, int> dislikes = {};
+  Map<String, int> victories = {};
+  Map<String, int> defeats = {};
   TextEditingController _searchController = TextEditingController();
   String _searchText = "";
 
@@ -22,6 +24,7 @@ class _BossesPageState extends State<BossesPage> {
     super.initState();
     _jefesFuture = buscarjefes();
     _loadVotes();
+    _loadStats();
     _searchController.addListener(() {
       setState(() {
         _searchText = _searchController.text.toLowerCase();
@@ -49,6 +52,20 @@ class _BossesPageState extends State<BossesPage> {
     await prefs.setString('dislikes', jsonEncode(dislikes));
   }
 
+  Future<void> _loadStats() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      victories = Map<String, int>.from(jsonDecode(prefs.getString('victories') ?? '{}'));
+      defeats = Map<String, int>.from(jsonDecode(prefs.getString('defeats') ?? '{}'));
+    });
+  }
+
+  Future<void> _saveStats() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('victories', jsonEncode(victories));
+    await prefs.setString('defeats', jsonEncode(defeats));
+  }
+
   void _likeJefe(String jefeId) {
     setState(() {
       likes[jefeId] = (likes[jefeId] ?? 0) + 1;
@@ -61,6 +78,20 @@ class _BossesPageState extends State<BossesPage> {
       dislikes[jefeId] = (dislikes[jefeId] ?? 0) + 1;
     });
     _saveVotes();
+  }
+
+  void _incrementVictory(String jefeId) {
+    setState(() {
+      victories[jefeId] = (victories[jefeId] ?? 0) + 1;
+    });
+    _saveStats();
+  }
+
+  void _incrementDefeat(String jefeId) {
+    setState(() {
+      defeats[jefeId] = (defeats[jefeId] ?? 0) + 1;
+    });
+    _saveStats();
   }
 
   Future<List<dynamic>> buscarjefes() async {
@@ -113,27 +144,46 @@ class _BossesPageState extends State<BossesPage> {
                   ],
                 ),
               const SizedBox(height: 16),
+              // Solo muestra los contadores, sin botones
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.thumb_up, color: Colors.green),
-                    onPressed: () {
-                      _likeJefe(jefeId);
-                      setState(() {}); // Para actualizar el contador en el dialog
-                    },
-                  ),
+                  const Icon(Icons.thumb_up, color: Colors.green),
+                  const SizedBox(width: 4),
                   Text('${likes[jefeId] ?? 0}'),
                   const SizedBox(width: 24),
-                  IconButton(
-                    icon: const Icon(Icons.thumb_down, color: Colors.red),
-                    onPressed: () {
-                      _dislikeJefe(jefeId);
-                      setState(() {});
-                    },
-                  ),
+                  const Icon(Icons.thumb_down, color: Colors.red),
+                  const SizedBox(width: 4),
                   Text('${dislikes[jefeId] ?? 0}'),
                 ],
+              ),
+              const SizedBox(height: 24),
+              // Usa StatefulBuilder y Wrap para los contadores de victorias/derrotas
+              StatefulBuilder(
+                builder: (context, setStateDialog) => Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _incrementVictory(jefeId);
+                        setStateDialog(() {});
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.emoji_events, color: Colors.yellow),
+                      label: Text('Victorias: ${victories[jefeId] ?? 0}'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        _incrementDefeat(jefeId);
+                        setStateDialog(() {});
+                        setState(() {});
+                      },
+                      icon: const Icon(Icons.close, color: Colors.red),
+                      label: Text('Derrotas: ${defeats[jefeId] ?? 0}'),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),

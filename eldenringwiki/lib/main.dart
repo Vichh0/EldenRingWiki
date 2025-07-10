@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'Pages/bosses.dart';
+import 'Pages/infocriaturas.dart'; // <-- Importa la página de criaturas
 
 void main() {
   runApp(const MyApp());
@@ -37,6 +38,8 @@ class _MainMenuState extends State<MainMenu> {
     Center(child: Text('Bienvenido a EldenRing Wiki', style: TextStyle(fontSize: 20))),
     // Página de Jefes
     BossesPage(),
+    // Página de Criaturas
+    CreaturesPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -62,6 +65,10 @@ class _MainMenuState extends State<MainMenu> {
           BottomNavigationBarItem(
             icon: Icon(Icons.shield),
             label: 'Jefes',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.pets),
+            label: 'Criaturas',
           ),
         ],
         currentIndex: _selectedIndex,
