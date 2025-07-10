@@ -1,11 +1,20 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+
 import 'Pages/bosses.dart';
-import 'Pages/infocriaturas.dart'; // <-- Importa la página de criaturas
+import 'Pages/infocriaturas.dart';
+import 'Pages/config.dart';
+import 'services/theme_provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,12 +22,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'EldenRing Wiki',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MainMenu(),
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: 'EldenRing Wiki',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple,
+              brightness: Brightness.light,
+            ),
+            textTheme: TextTheme(
+              bodyMedium: TextStyle(fontSize: themeProvider.fontSize),
+            ),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: Colors.deepPurple,
+              brightness: Brightness.dark,
+            ),
+            textTheme: TextTheme(
+              bodyMedium: TextStyle(fontSize: themeProvider.fontSize),
+            ),
+            useMaterial3: true,
+          ),
+          themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+          home: const MainMenu(),
+        );
+      },
     );
   }
 }
@@ -34,12 +65,10 @@ class _MainMenuState extends State<MainMenu> {
   int _selectedIndex = 0;
 
   static final List<Widget> _pages = <Widget>[
-    // Página Home vacía
-    Center(child: Text('Bienvenido a EldenRing Wiki', style: TextStyle(fontSize: 20))),
-    // Página de Jefes
+    Center(child: Text('Bienvenido a EldenRing Wiki')),
     BossesPage(),
-    // Página de Criaturas
     CreaturesPage(),
+    SettingsPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -70,6 +99,10 @@ class _MainMenuState extends State<MainMenu> {
             icon: Icon(Icons.pets),
             label: 'Criaturas',
           ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: 'Preferencias',
+          ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
@@ -84,7 +117,7 @@ class ServiceBusqueda {
     final response = await http.get(Uri.parse('https://eldenring.fanapis.com/api/bosses'));
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return data['data']; // La API devuelve los jefes en la propiedad 'data'
+      return data['data'];
     } else {
       throw Exception('Error al cargar jefes');
     }
