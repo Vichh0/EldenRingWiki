@@ -14,7 +14,7 @@ class _CreaturesPageState extends State<CreaturesPage> {
   late Future<List<dynamic>> _criaturasFuture;
   Map<String, int> likes = {};
   Map<String, int> dislikes = {};
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String _searchText = "";
 
   @override

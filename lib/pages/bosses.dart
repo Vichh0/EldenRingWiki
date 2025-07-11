@@ -16,7 +16,7 @@ class _BossesPageState extends State<BossesPage> {
   Map<String, int> dislikes = {};
   Map<String, int> victories = {};
   Map<String, int> defeats = {};
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   String _searchText = "";
 
   @override

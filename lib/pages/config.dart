@@ -1,3 +1,4 @@
+import 'package:eldenringwiki/pages/acercade.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/theme_provider.dart';
@@ -35,6 +36,19 @@ class SettingsPage extends StatelessWidget {
             Text(
               "A",
               style: TextStyle(fontSize: themeProvider.fontSize),
+            ),
+            const SizedBox(height: 20),
+            Card(
+              elevation: 2,
+              child: ListTile(
+              leading: const Icon(Icons.info_outline, color: Colors.blue),
+              title: const Text("Acerca de"),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => AcercaDePage()),
+                  );
+              }
+              ),
             ),
           ],
         ),
