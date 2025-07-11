@@ -104,7 +104,7 @@ class _BossesPageState extends State<BossesPage> {
     }
   }
 
-  void _mostrarDetalleJefe(BuildContext context, dynamic jefe) {
+  void _mostrarDetalleJefe(BuildContext context, dynamic jefe, bool ocultarLikesDislikes) {
     final jefeId = jefe['id'] ?? jefe['name'];
     showDialog(
       context: context,
@@ -144,19 +144,19 @@ class _BossesPageState extends State<BossesPage> {
                   ],
                 ),
               const SizedBox(height: 16),
-              // Solo muestra los contadores, sin botones
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.thumb_up, color: Colors.green),
-                  const SizedBox(width: 4),
-                  Text('${likes[jefeId] ?? 0}'),
-                  const SizedBox(width: 24),
-                  const Icon(Icons.thumb_down, color: Colors.red),
-                  const SizedBox(width: 4),
-                  Text('${dislikes[jefeId] ?? 0}'),
-                ],
-              ),
+              if (!ocultarLikesDislikes)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.thumb_up, color: Colors.green),
+                    const SizedBox(width: 4),
+                    Text('${likes[jefeId] ?? 0}'),
+                    const SizedBox(width: 24),
+                    const Icon(Icons.thumb_down, color: Colors.red),
+                    const SizedBox(width: 4),
+                    Text('${dislikes[jefeId] ?? 0}'),
+                  ],
+                ),
               const SizedBox(height: 24),
               // Usa StatefulBuilder y Wrap para los contadores de victorias/derrotas
               StatefulBuilder(
@@ -198,77 +198,104 @@ class _BossesPageState extends State<BossesPage> {
     );
   }
 
+  Future<bool> _getExcluirDerrotados() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('excluirDerrotados') ?? false;
+  }
+
+  Future<bool> _getOcultarLikesDislikes() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('ocultarLikesDislikes') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              labelText: 'Buscar jefe por nombre',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<List<dynamic>>(
-            future: _jefesFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                final jefes = snapshot.data!;
-                final filteredJefes = _searchText.isEmpty
-                    ? jefes
-                    : jefes.where((jefe) =>
-                        ((jefe['name'] ?? '').toString().toLowerCase().contains(_searchText))
-                      ).toList();
-                if (filteredJefes.isEmpty) {
-                  return const Center(child: Text('No se encontraron jefes.'));
-                }
-                return ListView.builder(
-                  itemCount: filteredJefes.length,
-                  itemBuilder: (context, index) {
-                    final jefe = filteredJefes[index];
-                    final jefeId = jefe['id'] ?? jefe['name'];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text(jefe['name'] ?? 'Sin nombre'),
-                        subtitle: Text(jefe['description'] ?? 'Sin descripción'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.thumb_up, color: Colors.green),
-                              onPressed: () => _likeJefe(jefeId),
-                            ),
-                            Text('${likes[jefeId] ?? 0}'),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(Icons.thumb_down, color: Colors.red),
-                              onPressed: () => _dislikeJefe(jefeId),
-                            ),
-                            Text('${dislikes[jefeId] ?? 0}'),
-                          ],
-                        ),
-                        onTap: () => _mostrarDetalleJefe(context, jefe),
-                      ),
-                    );
-                  },
-                );
-              } else {
-                return const Center(child: Text('No se encontraron jefes.'));
-              }
-            },
-          ),
-        ),
-      ],
+    return FutureBuilder<bool>(
+      future: _getExcluirDerrotados(),
+      builder: (context, excluirSnapshot) {
+        final excluirDerrotados = excluirSnapshot.data ?? false;
+        return FutureBuilder<bool>(
+          future: _getOcultarLikesDislikes(),
+          builder: (context, ocultarSnapshot) {
+            final ocultarLikesDislikes = ocultarSnapshot.data ?? false;
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      labelText: 'Buscar jefe por nombre',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FutureBuilder<List<dynamic>>(
+                    future: _jefesFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      } else if (snapshot.hasError) {
+                        return Center(child: Text('Error: ${snapshot.error}'));
+                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                        final jefes = snapshot.data!;
+                        final filteredJefes = jefes.where((jefe) {
+                          final jefeId = jefe['id'] ?? jefe['name'];
+                          final isDefeated = victories[jefeId] != null && victories[jefeId]! > 0;
+                          final matchesSearch = _searchText.isEmpty ||
+                            ((jefe['name'] ?? '').toString().toLowerCase().contains(_searchText));
+                          if (excluirDerrotados && isDefeated) return false;
+                          return matchesSearch;
+                        }).toList();
+                        if (filteredJefes.isEmpty) {
+                          return const Center(child: Text('No se encontraron jefes.'));
+                        }
+                        return ListView.builder(
+                          itemCount: filteredJefes.length,
+                          itemBuilder: (context, index) {
+                            final jefe = filteredJefes[index];
+                            final jefeId = jefe['id'] ?? jefe['name'];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              child: ListTile(
+                                title: Text(jefe['name'] ?? 'Sin nombre'),
+                                subtitle: Text(jefe['description'] ?? 'Sin descripción'),
+                                trailing: ocultarLikesDislikes
+                                  ? null
+                                  : Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(Icons.thumb_up, color: Colors.green),
+                                          onPressed: () => _likeJefe(jefeId),
+                                        ),
+                                        Text('${likes[jefeId] ?? 0}'),
+                                        const SizedBox(width: 8),
+                                        IconButton(
+                                          icon: const Icon(Icons.thumb_down, color: Colors.red),
+                                          onPressed: () => _dislikeJefe(jefeId),
+                                        ),
+                                        Text('${dislikes[jefeId] ?? 0}'),
+                                      ],
+                                    ),
+                                onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                              ),
+                            );
+                          },
+                        );
+                      } else {
+                        return const Center(child: Text('No se encontraron jefes.'));
+                      }
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

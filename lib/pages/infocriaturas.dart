@@ -73,7 +73,12 @@ class _CreaturesPageState extends State<CreaturesPage> {
     }
   }
 
-  void _mostrarDetalleCriatura(BuildContext context, dynamic criatura) {
+  Future<bool> _getOcultarLikesDislikes() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('ocultarLikesDislikes') ?? false;
+  }
+
+  void _mostrarDetalleCriatura(BuildContext context, dynamic criatura, bool ocultarLikesDislikes) {
     final criaturaId = criatura['id'] ?? criatura['name'];
     showDialog(
       context: context,
@@ -111,28 +116,29 @@ class _CreaturesPageState extends State<CreaturesPage> {
                   ],
                 ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.thumb_up, color: Colors.green),
-                    onPressed: () {
-                      _likeCriatura(criaturaId);
-                      setState(() {});
-                    },
-                  ),
-                  Text('${likes[criaturaId] ?? 0}'),
-                  const SizedBox(width: 24),
-                  IconButton(
-                    icon: const Icon(Icons.thumb_down, color: Colors.red),
-                    onPressed: () {
-                      _dislikeCriatura(criaturaId);
-                      setState(() {});
-                    },
-                  ),
-                  Text('${dislikes[criaturaId] ?? 0}'),
-                ],
-              ),
+              if (!ocultarLikesDislikes)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.thumb_up, color: Colors.green),
+                      onPressed: () {
+                        _likeCriatura(criaturaId);
+                        setState(() {});
+                      },
+                    ),
+                    Text('${likes[criaturaId] ?? 0}'),
+                    const SizedBox(width: 24),
+                    IconButton(
+                      icon: const Icon(Icons.thumb_down, color: Colors.red),
+                      onPressed: () {
+                        _dislikeCriatura(criaturaId);
+                        setState(() {});
+                      },
+                    ),
+                    Text('${dislikes[criaturaId] ?? 0}'),
+                  ],
+                ),
             ],
           ),
         ),
@@ -148,75 +154,83 @@ class _CreaturesPageState extends State<CreaturesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: TextField(
-            controller: _searchController,
-            decoration: InputDecoration(
-              labelText: 'Buscar criatura por nombre',
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+    return FutureBuilder<bool>(
+      future: _getOcultarLikesDislikes(),
+      builder: (context, snapshotOcultar) {
+        final ocultarLikesDislikes = snapshotOcultar.data ?? false;
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  labelText: 'Buscar criatura por nombre',
+                  prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
             ),
-          ),
-        ),
-        Expanded(
-          child: FutureBuilder<List<dynamic>>(
-            future: _criaturasFuture,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
-              } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                final criaturas = snapshot.data!;
-                final filteredCriaturas = _searchText.isEmpty
-                    ? criaturas
-                    : criaturas.where((criatura) =>
-                        ((criatura['name'] ?? '').toString().toLowerCase().contains(_searchText))
-                      ).toList();
-                if (filteredCriaturas.isEmpty) {
-                  return const Center(child: Text('No se encontraron criaturas.'));
-                }
-                return ListView.builder(
-                  itemCount: filteredCriaturas.length,
-                  itemBuilder: (context, index) {
-                    final criatura = filteredCriaturas[index];
-                    final criaturaId = criatura['id'] ?? criatura['name'];
-                    return Card(
-                      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      child: ListTile(
-                        title: Text(criatura['name'] ?? 'Sin nombre'),
-                        subtitle: Text(criatura['description'] ?? 'Sin descripción'),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.thumb_up, color: Colors.green),
-                              onPressed: () => _likeCriatura(criaturaId),
-                            ),
-                            Text('${likes[criaturaId] ?? 0}'),
-                            const SizedBox(width: 8),
-                            IconButton(
-                              icon: const Icon(Icons.thumb_down, color: Colors.red),
-                              onPressed: () => _dislikeCriatura(criaturaId),
-                            ),
-                            Text('${dislikes[criaturaId] ?? 0}'),
-                          ],
-                        ),
-                        onTap: () => _mostrarDetalleCriatura(context, criatura),
-                      ),
+            Expanded(
+              child: FutureBuilder<List<dynamic>>(
+                future: _criaturasFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('Error: ${snapshot.error}'));
+                  } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                    final criaturas = snapshot.data!;
+                    final filteredCriaturas = _searchText.isEmpty
+                        ? criaturas
+                        : criaturas.where((criatura) =>
+                            ((criatura['name'] ?? '').toString().toLowerCase().contains(_searchText))
+                          ).toList();
+                    if (filteredCriaturas.isEmpty) {
+                      return const Center(child: Text('No se encontraron criaturas.'));
+                    }
+                    return ListView.builder(
+                      itemCount: filteredCriaturas.length,
+                      itemBuilder: (context, index) {
+                        final criatura = filteredCriaturas[index];
+                        final criaturaId = criatura['id'] ?? criatura['name'];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          child: ListTile(
+                            title: Text(criatura['name'] ?? 'Sin nombre'),
+                            subtitle: Text(criatura['description'] ?? 'Sin descripción'),
+                            trailing: ocultarLikesDislikes
+                              ? null
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_up, color: Colors.green),
+                                      onPressed: () => _likeCriatura(criaturaId),
+                                    ),
+                                    Text('${likes[criaturaId] ?? 0}'),
+                                    const SizedBox(width: 8),
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_down, color: Colors.red),
+                                      onPressed: () => _dislikeCriatura(criaturaId),
+                                    ),
+                                    Text('${dislikes[criaturaId] ?? 0}'),
+                                  ],
+                                ),
+                            onTap: () => _mostrarDetalleCriatura(context, criatura, ocultarLikesDislikes),
+                          ),
+                        );
+                      },
                     );
-                  },
-                );
-              } else {
-                return const Center(child: Text('No se encontraron criaturas.'));
-              }
-            },
-          ),
-        ),
-      ],
+                  } else {
+                    return const Center(child: Text('No se encontraron criaturas.'));
+                  }
+                },
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
