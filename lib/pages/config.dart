@@ -15,27 +15,62 @@ class SettingsPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          children: [
-            SwitchListTile(
-              title: const Text("Tema Oscuro"),
-              value: themeProvider.isDarkMode,
-              onChanged: (_) => themeProvider.toggleTheme(),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "Tamaño de Fuente: ${themeProvider.fontSize.toStringAsFixed(0)}",
-              style: TextStyle(fontSize: themeProvider.fontSize),
-            ),
-            Slider(
-              min: 12,
-              max: 30,
-              value: themeProvider.fontSize,
-              onChanged: (value) => themeProvider.setFontSize(value),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              "A",
-              style: TextStyle(fontSize: themeProvider.fontSize),
+            children: [
+                Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                    "Preferencias",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    ),
+                    const SizedBox(height: 10),
+                    CheckboxListTile(
+                    title: const Text("Excluir jefes derrotados"),
+                    value: false,
+                    onChanged: (value) {},
+                    ),
+                    CheckboxListTile(
+                    title: const Text("Ocultar likes y dislikes"),
+                    value: false,
+                    onChanged: (value) {},
+                    ),
+                  ],
+                  ),
+                ),
+              ),
+            Card(
+              elevation: 2,
+              child: Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                SwitchListTile(
+                  title: const Text("Tema Oscuro"),
+                  value: themeProvider.isDarkMode,
+                  onChanged: (_) => themeProvider.toggleTheme(),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Tamaño de Fuente: ${themeProvider.fontSize.toStringAsFixed(0)}",
+                  style: TextStyle(fontSize: themeProvider.fontSize),
+                ),
+                Slider(
+                  min: 12,
+                  max: 30,
+                  value: themeProvider.fontSize,
+                  onChanged: (value) => themeProvider.setFontSize(value),
+                ),
+                ],
+              ),
+              ),
             ),
             const SizedBox(height: 20),
             Card(
@@ -45,9 +80,9 @@ class SettingsPage extends StatelessWidget {
               title: const Text("Acerca de"),
               onTap: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => AcercaDePage()),
-                  );
-              }
+                MaterialPageRoute(builder: (context) => AcercaDePage()),
+                );
+              },
               ),
             ),
           ],

@@ -6,7 +6,6 @@ class AcercaDePage extends StatefulWidget {
 }
 
 class _AcercaDePageState extends State<AcercaDePage> {
-  final TextEditingController _controller = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
