@@ -12,8 +12,8 @@ class BossesPage extends StatefulWidget {
 
 class _BossesPageState extends State<BossesPage> {
   late Future<List<dynamic>> _jefesFuture;
-  Map<String, int> likes = {};
-  Map<String, int> dislikes = {};
+  Map<String, bool> likes = {};     // true si le dio like, false/null si no
+  Map<String, bool> dislikes = {};  // true si le dio dislike, false/null si no
   Map<String, int> victories = {};
   Map<String, int> defeats = {};
   Map<String, bool> favoritos = {};
@@ -42,9 +42,21 @@ class _BossesPageState extends State<BossesPage> {
 
   Future<void> _loadVotes() async {
     final prefs = await SharedPreferences.getInstance();
+    final likesString = prefs.getString('likes');
+    final dislikesString = prefs.getString('dislikes');
     setState(() {
-      likes = Map<String, int>.from(jsonDecode(prefs.getString('likes') ?? '{}'));
-      dislikes = Map<String, int>.from(jsonDecode(prefs.getString('dislikes') ?? '{}'));
+      if (likesString != null && likesString.isNotEmpty) {
+        final decodedLikes = jsonDecode(likesString);
+        likes = decodedLikes is Map ? Map<String, bool>.from(decodedLikes) : {};
+      } else {
+        likes = {};
+      }
+      if (dislikesString != null && dislikesString.isNotEmpty) {
+        final decodedDislikes = jsonDecode(dislikesString);
+        dislikes = decodedDislikes is Map ? Map<String, bool>.from(decodedDislikes) : {};
+      } else {
+        dislikes = {};
+      }
     });
   }
 
@@ -82,14 +94,24 @@ class _BossesPageState extends State<BossesPage> {
 
   void _likeJefe(String jefeId) {
     setState(() {
-      likes[jefeId] = (likes[jefeId] ?? 0) + 1;
+      if (likes[jefeId] == true) {
+        likes[jefeId] = false; // Quita el like si ya lo tenía
+      } else {
+        likes[jefeId] = true;
+        dislikes[jefeId] = false; // Solo puede tener una opción activa
+      }
     });
     _saveVotes();
   }
 
   void _dislikeJefe(String jefeId) {
     setState(() {
-      dislikes[jefeId] = (dislikes[jefeId] ?? 0) + 1;
+      if (dislikes[jefeId] == true) {
+        dislikes[jefeId] = false; // Quita el dislike si ya lo tenía
+      } else {
+        dislikes[jefeId] = true;
+        likes[jefeId] = false; // Solo puede tener una opción activa
+      }
     });
     _saveVotes();
   }
@@ -326,19 +348,6 @@ class _BossesPageState extends State<BossesPage> {
                                               _saveFavoritos();
                                             },
                                           ),
-                                          if (!ocultarLikesDislikes) ...[
-                                            IconButton(
-                                              icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
-                                              onPressed: () => _likeJefe(jefeId),
-                                            ),
-                                            Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
-                                              onPressed: () => _dislikeJefe(jefeId),
-                                            ),
-                                            Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
-                                          ],
                                         ],
                                       ),
                                       onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
