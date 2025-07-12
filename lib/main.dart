@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'services/theme_provider.dart';
 import 'Pages/Home.dart';
+import 'Pages/Home.dart';
 import 'Pages/splahsscreen.dart';
 
 void main() {
@@ -19,6 +20,20 @@ void main() {
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+  Future<bool> checkInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        // Verifica acceso a la API
+        final response = await http.get(Uri.parse('https://eldenring.fanapis.com/api/bosses')).timeout(const Duration(seconds: 5));
+        return response.statusCode == 200;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
 
   Future<bool> checkInternetConnection() async {
     try {
@@ -113,5 +128,14 @@ class ServiceBusqueda {
     } else {
       throw Exception('Error al cargar jefes');
     }
+  }
+}
+
+Future<bool> checkInternetConnection() async {
+  try {
+    final result = await InternetAddress.lookup('example.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (_) {
+    return false;
   }
 }
