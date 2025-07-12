@@ -35,20 +35,6 @@ class MyApp extends StatelessWidget {
     }
   }
 
-  Future<bool> checkInternetConnection() async {
-    try {
-      final result = await InternetAddress.lookup('example.com');
-      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        // Verifica acceso a la API
-        final response = await http.get(Uri.parse('https://eldenring.fanapis.com/api/bosses')).timeout(const Duration(seconds: 5));
-        return response.statusCode == 200;
-      }
-      return false;
-    } catch (_) {
-      return false;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeProvider>(

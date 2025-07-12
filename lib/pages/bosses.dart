@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -184,13 +185,24 @@ class _BossesPageState extends State<BossesPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Icon(Icons.thumb_up, color: Colors.green),
-                    const SizedBox(width: 4),
-                    Text('${likes[jefeId] ?? 0}'),
-                    const SizedBox(width: 24),
-                    const Icon(Icons.thumb_down, color: Colors.red),
-                    const SizedBox(width: 4),
-                    Text('${dislikes[jefeId] ?? 0}'),
+                    Icon(
+                      likes.containsKey(jefeId) && likes[jefeId] == true
+                      ? Icons.thumb_up
+                      : Icons.thumb_up_off_alt,
+                      color: likes.containsKey(jefeId) && likes[jefeId] == true
+                      ? Colors.green
+                      : Colors.grey,
+                      size: 28,
+                    ),
+                    Icon(
+                      dislikes.containsKey(jefeId) && dislikes[jefeId] == true
+                      ? Icons.thumb_down
+                      : Icons.thumb_down_off_alt,
+                      color: dislikes.containsKey(jefeId) && dislikes[jefeId] == true
+                      ? Colors.red
+                      : Colors.grey,
+                      size: 28,
+                    ),
                   ],
                 ),
               const SizedBox(height: 24),
@@ -357,16 +369,31 @@ class _BossesPageState extends State<BossesPage> {
                                             ),
                                             if (!ocultarLikesDislikes) ...[
                                               IconButton(
-                                                icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
+                                                icon: Icon(
+                                                  likes.containsKey(jefeId) && likes[jefeId] == true
+                                                  ? Icons.thumb_up 
+                                                  : Icons.thumb_up_off_alt,
+                                                  color: likes.containsKey(jefeId) && likes[jefeId] == true
+                                                  ? Colors.green
+                                                  : Colors.grey,
+                                                  size: 28,
+                                                ),
                                                 onPressed: () => _likeJefe(jefeId),
                                               ),
-                                              Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
                                               const SizedBox(width: 8),
                                               IconButton(
-                                                icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
+                                                icon: Icon(
+                                                  dislikes.containsKey(jefeId) && dislikes[jefeId] == true
+                                                  ? Icons.thumb_down 
+                                                  : Icons.thumb_down_off_alt,
+                                                  color: dislikes.containsKey(jefeId) && dislikes[jefeId] == true
+                                                  ? Colors.red
+                                                  : Colors.grey,
+                                                  size: 28,
+                                                ),
                                                 onPressed: () => _dislikeJefe(jefeId),
                                               ),
-                                              Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                              const SizedBox(width: 8),
                                             ],
                                           ],
                                         ),
