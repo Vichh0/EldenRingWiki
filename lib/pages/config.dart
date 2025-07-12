@@ -14,6 +14,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool excluirDerrotados = false;
   bool ocultarLikesDislikes = false;
+  bool buscarSoloFavoritos = false;
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       excluirDerrotados = prefs.getBool('excluirDerrotados') ?? false;
       ocultarLikesDislikes = prefs.getBool('ocultarLikesDislikes') ?? false;
+      buscarSoloFavoritos = prefs.getBool('buscarSoloFavoritos') ?? false;
     });
   }
 
@@ -37,6 +39,11 @@ class _SettingsPageState extends State<SettingsPage> {
   Future<void> _savePrefsOcultar(bool value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('ocultarLikesDislikes', value);
+  }
+
+  Future<void> _savePrefsBuscarFavoritos(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('buscarSoloFavoritos', value);
   }
 
   @override
@@ -82,6 +89,16 @@ class _SettingsPageState extends State<SettingsPage> {
                           ocultarLikesDislikes = value ?? false;
                         });
                         _savePrefsOcultar(value ?? false);
+                      },
+                    ),
+                    CheckboxListTile(
+                      title: const Text("Buscar solo favoritos"),
+                      value: buscarSoloFavoritos,
+                      onChanged: (value) {
+                        setState(() {
+                          buscarSoloFavoritos = value ?? false;
+                        });
+                        _savePrefsBuscarFavoritos(value ?? false);
                       },
                     ),
                   ],

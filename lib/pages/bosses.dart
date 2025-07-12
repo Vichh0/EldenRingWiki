@@ -222,6 +222,11 @@ class _BossesPageState extends State<BossesPage> {
     return prefs.getBool('ocultarLikesDislikes') ?? false;
   }
 
+  Future<bool> _getBuscarSoloFavoritos() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('buscarSoloFavoritos') ?? false;
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<bool>(
@@ -232,117 +237,125 @@ class _BossesPageState extends State<BossesPage> {
           future: _getOcultarLikesDislikes(),
           builder: (context, ocultarSnapshot) {
             final ocultarLikesDislikes = ocultarSnapshot.data ?? false;
-            return Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: TextField(
-                    controller: _searchController,
-                    decoration: InputDecoration(
-                      labelText: 'Buscar jefe por nombre',
-                      prefixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            return FutureBuilder<bool>(
+              future: _getBuscarSoloFavoritos(),
+              builder: (context, favoritosSnapshot) {
+                final buscarSoloFavoritos = favoritosSnapshot.data ?? false;
+                return Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          labelText: 'Buscar jefe por nombre',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                Expanded(
-                  child: FutureBuilder<List<dynamic>>(
-                    future: _jefesFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                        final jefes = snapshot.data!;
-                        final filteredJefes = jefes.where((jefe) {
-                          final jefeId = jefe['id'] ?? jefe['name'];
-                          final isDefeated = victories[jefeId] != null && victories[jefeId]! > 0;
-                          final matchesSearch = _searchText.isEmpty ||
-                            ((jefe['name'] ?? '').toString().toLowerCase().contains(_searchText));
-                          if (excluirDerrotados && isDefeated) return false;
-                          return matchesSearch;
-                        }).toList();
-                        filteredJefes.sort((a, b) {
-                          final aId = a['id'] ?? a['name'];
-                          final bId = b['id'] ?? b['name'];
-                          final aFav = favoritos[aId] == true ? 0 : 1;
-                          final bFav = favoritos[bId] == true ? 0 : 1;
-                          return aFav.compareTo(bFav);
-                        });
-                        if (filteredJefes.isEmpty) {
-                          return const Center(child: Text('No se encontraron jefes.'));
-                        }
-                        return ListView.builder(
-                          itemCount: filteredJefes.length,
-                          itemBuilder: (context, index) {
-                            final jefe = filteredJefes[index];
-                            final jefeId = jefe['id'] ?? jefe['name'];
-                            return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Más espacio vertical
-                              elevation: 6, // Opcional: sombra más notoria
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8), // Más padding interno
-                                child: ListTile(
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Más espacio en ListTile
-                                  leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
-                                      ? Image.network(
-                                          jefe['image'],
-                                          width: 80, // Más ancho
-                                          height: 80, // Más alto
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) =>
-                                              const Icon(Icons.broken_image, size: 60),
-                                        )
-                                      : const Icon(Icons.image_not_supported, size: 60),
-                                  title: Text(
-                                    jefe['name'] ?? 'Sin nombre',
-                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                  ),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          favoritos[jefeId] == true ? Icons.star : Icons.star_border,
-                                          color: favoritos[jefeId] == true ? Colors.amber : Colors.grey,
-                                          size: 32, // Ícono más grande
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            favoritos[jefeId] = !(favoritos[jefeId] ?? false);
-                                          });
-                                          _saveFavoritos();
-                                        },
+                    Expanded(
+                      child: FutureBuilder<List<dynamic>>(
+                        future: _jefesFuture,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return const Center(child: CircularProgressIndicator());
+                          } else if (snapshot.hasError) {
+                            return Center(child: Text('Error: ${snapshot.error}'));
+                          } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                            final jefes = snapshot.data!;
+                            final filteredJefes = jefes.where((jefe) {
+                              final jefeId = jefe['id'] ?? jefe['name'];
+                              final isDefeated = victories[jefeId] != null && victories[jefeId]! > 0;
+                              final matchesSearch = _searchText.isEmpty ||
+                                ((jefe['name'] ?? '').toString().toLowerCase().contains(_searchText));
+                              final isFavorito = favoritos[jefeId] == true;
+                              if (excluirDerrotados && isDefeated) return false;
+                              if (buscarSoloFavoritos && !isFavorito) return false;
+                              return matchesSearch;
+                            }).toList();
+                            filteredJefes.sort((a, b) {
+                              final aId = a['id'] ?? a['name'];
+                              final bId = b['id'] ?? b['name'];
+                              final aFav = favoritos[aId] == true ? 0 : 1;
+                              final bFav = favoritos[bId] == true ? 0 : 1;
+                              return aFav.compareTo(bFav);
+                            });
+                            if (filteredJefes.isEmpty) {
+                              return const Center(child: Text('No se encontraron jefes.'));
+                            }
+                            return ListView.builder(
+                              itemCount: filteredJefes.length,
+                              itemBuilder: (context, index) {
+                                final jefe = filteredJefes[index];
+                                final jefeId = jefe['id'] ?? jefe['name'];
+                                return Card(
+                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Más espacio vertical
+                                  elevation: 6, // Opcional: sombra más notoria
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8), // Más padding interno
+                                    child: ListTile(
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Más espacio en ListTile
+                                      leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
+                                          ? Image.network(
+                                              jefe['image'],
+                                              width: 80, // Más ancho
+                                              height: 80, // Más alto
+                                              fit: BoxFit.cover,
+                                              errorBuilder: (context, error, stackTrace) =>
+                                                  const Icon(Icons.broken_image, size: 60),
+                                            )
+                                          : const Icon(Icons.image_not_supported, size: 60),
+                                      title: Text(
+                                        jefe['name'] ?? 'Sin nombre',
+                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                                       ),
-                                      if (!ocultarLikesDislikes) ...[
-                                        IconButton(
-                                          icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
-                                          onPressed: () => _likeJefe(jefeId),
-                                        ),
-                                        Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
-                                        const SizedBox(width: 8),
-                                        IconButton(
-                                          icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
-                                          onPressed: () => _dislikeJefe(jefeId),
-                                        ),
-                                        Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
-                                      ],
-                                    ],
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: Icon(
+                                              favoritos[jefeId] == true ? Icons.star : Icons.star_border,
+                                              color: favoritos[jefeId] == true ? Colors.amber : Colors.grey,
+                                              size: 32, // Ícono más grande
+                                            ),
+                                            onPressed: () {
+                                              setState(() {
+                                                favoritos[jefeId] = !(favoritos[jefeId] ?? false);
+                                              });
+                                              _saveFavoritos();
+                                            },
+                                          ),
+                                          if (!ocultarLikesDislikes) ...[
+                                            IconButton(
+                                              icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
+                                              onPressed: () => _likeJefe(jefeId),
+                                            ),
+                                            Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                            const SizedBox(width: 8),
+                                            IconButton(
+                                              icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
+                                              onPressed: () => _dislikeJefe(jefeId),
+                                            ),
+                                            Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                          ],
+                                        ],
+                                      ),
+                                      onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                                    ),
                                   ),
-                                  onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
-                                ),
-                              ),
+                                );
+                              },
                             );
-                          },
-                        );
-                      } else {
-                        return const Center(child: Text('No se encontraron jefes.'));
-                      }
-                    },
-                  ),
-                ),
-              ],
+                          } else {
+                            return const Center(child: Text('No se encontraron jefes.'));
+                          }
+                        },
+                      ),
+                    ),
+                  ],
+                );
+              },
             );
           },
         );

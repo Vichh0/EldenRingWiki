@@ -1,13 +1,12 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
-import 'Pages/bosses.dart';
-import 'Pages/infocriaturas.dart';
-import 'Pages/config.dart';
 import 'services/theme_provider.dart';
 import 'Pages/Home.dart'; // Asegúrate de importar tu nuevo HomePage
+import 'Pages/splahsscreen.dart';
 
 void main() {
   runApp(
@@ -48,68 +47,17 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           themeMode: themeProvider.isDarkMode ? ThemeMode.dark : ThemeMode.light,
-          home: const MainMenu(),
+          home: FutureBuilder(
+            future: Future.delayed(const Duration(seconds: 2)), // Simula carga
+            builder: (context, snapshot) {
+              if (snapshot.connectionState != ConnectionState.done) {
+                return const SplashScreen();
+              }
+              return const HomePage();
+            },
+          ),
         );
       },
-    );
-  }
-}
-
-class MainMenu extends StatefulWidget {
-  const MainMenu({super.key});
-
-  @override
-  State<MainMenu> createState() => _MainMenuState();
-}
-
-class _MainMenuState extends State<MainMenu> {
-  int _selectedIndex = 0;
-
-  static final List<Widget> _pages = <Widget>[
-    HomePage(), // <-- Cambia esto por tu nuevo HomePage
-    BossesPage(),
-    CreaturesPage(),
-    SettingsPage(),
-  ];
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('EldenRing Wiki'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
-      body: _pages[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.deepPurple), // Cambiado a morado
-            label: 'Inicio',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.shield, color: Colors.deepPurple), // Cambiado a morado
-            label: 'Jefes',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.pets, color: Colors.deepPurple), // Cambiado a morado
-            label: 'Criaturas',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings, color: Colors.deepPurple), // Cambiado a morado
-            label: 'Preferencias',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.deepPurple, // Opcional: morado para no seleccionados
-        onTap: _onItemTapped,
-      ),
     );
   }
 }
@@ -123,5 +71,14 @@ class ServiceBusqueda {
     } else {
       throw Exception('Error al cargar jefes');
     }
+  }
+}
+
+Future<bool> checkInternetConnection() async {
+  try {
+    final result = await InternetAddress.lookup('example.com');
+    return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+  } catch (_) {
+    return false;
   }
 }
