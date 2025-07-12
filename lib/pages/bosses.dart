@@ -16,6 +16,7 @@ class _BossesPageState extends State<BossesPage> {
   Map<String, int> dislikes = {};
   Map<String, int> victories = {};
   Map<String, int> defeats = {};
+  Map<String, bool> favoritos = {};
   final TextEditingController _searchController = TextEditingController();
   String _searchText = "";
 
@@ -25,6 +26,7 @@ class _BossesPageState extends State<BossesPage> {
     _jefesFuture = buscarjefes();
     _loadVotes();
     _loadStats();
+    _loadFavoritos(); // <-- Añade esta línea
     _searchController.addListener(() {
       setState(() {
         _searchText = _searchController.text.toLowerCase();
@@ -64,6 +66,18 @@ class _BossesPageState extends State<BossesPage> {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('victories', jsonEncode(victories));
     await prefs.setString('defeats', jsonEncode(defeats));
+  }
+
+  Future<void> _loadFavoritos() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      favoritos = Map<String, bool>.from(jsonDecode(prefs.getString('favoritos') ?? '{}'));
+    });
+  }
+
+  Future<void> _saveFavoritos() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('favoritos', jsonEncode(favoritos));
   }
 
   void _likeJefe(String jefeId) {
@@ -249,6 +263,13 @@ class _BossesPageState extends State<BossesPage> {
                           if (excluirDerrotados && isDefeated) return false;
                           return matchesSearch;
                         }).toList();
+                        filteredJefes.sort((a, b) {
+                          final aId = a['id'] ?? a['name'];
+                          final bId = b['id'] ?? b['name'];
+                          final aFav = favoritos[aId] == true ? 0 : 1;
+                          final bFav = favoritos[bId] == true ? 0 : 1;
+                          return aFav.compareTo(bFav);
+                        });
                         if (filteredJefes.isEmpty) {
                           return const Center(child: Text('No se encontraron jefes.'));
                         }
@@ -258,29 +279,59 @@ class _BossesPageState extends State<BossesPage> {
                             final jefe = filteredJefes[index];
                             final jefeId = jefe['id'] ?? jefe['name'];
                             return Card(
-                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              child: ListTile(
-                                title: Text(jefe['name'] ?? 'Sin nombre'),
-                                subtitle: Text(jefe['description'] ?? 'Sin descripción'),
-                                trailing: ocultarLikesDislikes
-                                  ? null
-                                  : Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
+                              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Más espacio vertical
+                              elevation: 6, // Opcional: sombra más notoria
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8), // Más padding interno
+                                child: ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Más espacio en ListTile
+                                  leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
+                                      ? Image.network(
+                                          jefe['image'],
+                                          width: 80, // Más ancho
+                                          height: 80, // Más alto
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              const Icon(Icons.broken_image, size: 60),
+                                        )
+                                      : const Icon(Icons.image_not_supported, size: 60),
+                                  title: Text(
+                                    jefe['name'] ?? 'Sin nombre',
+                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          favoritos[jefeId] == true ? Icons.star : Icons.star_border,
+                                          color: favoritos[jefeId] == true ? Colors.amber : Colors.grey,
+                                          size: 32, // Ícono más grande
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            favoritos[jefeId] = !(favoritos[jefeId] ?? false);
+                                          });
+                                          _saveFavoritos();
+                                        },
+                                      ),
+                                      if (!ocultarLikesDislikes) ...[
                                         IconButton(
-                                          icon: const Icon(Icons.thumb_up, color: Colors.green),
+                                          icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
                                           onPressed: () => _likeJefe(jefeId),
                                         ),
-                                        Text('${likes[jefeId] ?? 0}'),
+                                        Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
                                         const SizedBox(width: 8),
                                         IconButton(
-                                          icon: const Icon(Icons.thumb_down, color: Colors.red),
+                                          icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
                                           onPressed: () => _dislikeJefe(jefeId),
                                         ),
-                                        Text('${dislikes[jefeId] ?? 0}'),
+                                        Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
                                       ],
-                                    ),
-                                onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                                    ],
+                                  ),
+                                  onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                                ),
                               ),
                             );
                           },
