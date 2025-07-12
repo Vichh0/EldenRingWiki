@@ -290,58 +290,65 @@ class _BossesPageState extends State<BossesPage> {
                                 final jefe = filteredJefes[index];
                                 final jefeId = jefe['id'] ?? jefe['name'];
                                 return Card(
-                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12), // Más espacio vertical
-                                  elevation: 6, // Opcional: sombra más notoria
+                                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                                  elevation: 6,
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8), // Más padding interno
-                                    child: ListTile(
-                                      contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12), // Más espacio en ListTile
-                                      leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
-                                          ? Image.network(
-                                              jefe['image'],
-                                              width: 80, // Más ancho
-                                              height: 80, // Más alto
-                                              fit: BoxFit.cover,
-                                              errorBuilder: (context, error, stackTrace) =>
-                                                  const Icon(Icons.broken_image, size: 60),
-                                            )
-                                          : const Icon(Icons.image_not_supported, size: 60),
-                                      title: Text(
-                                        jefe['name'] ?? 'Sin nombre',
-                                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                      ),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: Icon(
-                                              favoritos[jefeId] == true ? Icons.star : Icons.star_border,
-                                              color: favoritos[jefeId] == true ? Colors.amber : Colors.grey,
-                                              size: 32, // Ícono más grande
-                                            ),
-                                            onPressed: () {
-                                              setState(() {
-                                                favoritos[jefeId] = !(favoritos[jefeId] ?? false);
-                                              });
-                                              _saveFavoritos();
-                                            },
+                                    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        ListTile(
+                                          contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                                          leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
+                                              ? Image.network(
+                                                  jefe['image'],
+                                                  width: 80,
+                                                  height: 80,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) =>
+                                                      const Icon(Icons.broken_image, size: 60),
+                                                )
+                                              : const Icon(Icons.image_not_supported, size: 60),
+                                          title: Text(
+                                            jefe['name'] ?? 'Sin nombre',
+                                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
                                           ),
-                                          if (!ocultarLikesDislikes) ...[
+                                          onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
                                             IconButton(
-                                              icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
-                                              onPressed: () => _likeJefe(jefeId),
+                                              icon: Icon(
+                                                favoritos[jefeId] == true ? Icons.star : Icons.star_border,
+                                                color: favoritos[jefeId] == true ? Colors.amber : Colors.grey,
+                                                size: 32,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  favoritos[jefeId] = !(favoritos[jefeId] ?? false);
+                                                });
+                                                _saveFavoritos();
+                                              },
                                             ),
-                                            Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
-                                            const SizedBox(width: 8),
-                                            IconButton(
-                                              icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
-                                              onPressed: () => _dislikeJefe(jefeId),
-                                            ),
-                                            Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                            if (!ocultarLikesDislikes) ...[
+                                              IconButton(
+                                                icon: const Icon(Icons.thumb_up, color: Colors.green, size: 28),
+                                                onPressed: () => _likeJefe(jefeId),
+                                              ),
+                                              Text('${likes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                              const SizedBox(width: 8),
+                                              IconButton(
+                                                icon: const Icon(Icons.thumb_down, color: Colors.red, size: 28),
+                                                onPressed: () => _dislikeJefe(jefeId),
+                                              ),
+                                              Text('${dislikes[jefeId] ?? 0}', style: const TextStyle(fontSize: 16)),
+                                            ],
                                           ],
-                                        ],
-                                      ),
-                                      onTap: () => _mostrarDetalleJefe(context, jefe, ocultarLikesDislikes),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                 );
