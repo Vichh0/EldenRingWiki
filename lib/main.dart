@@ -7,6 +7,7 @@ import 'Pages/bosses.dart';
 import 'Pages/infocriaturas.dart';
 import 'Pages/config.dart';
 import 'services/theme_provider.dart';
+import 'Pages/Home.dart'; // Asegúrate de importar tu nuevo HomePage
 
 void main() {
   runApp(
@@ -65,7 +66,7 @@ class _MainMenuState extends State<MainMenu> {
   int _selectedIndex = 0;
 
   static final List<Widget> _pages = <Widget>[
-    Center(child: Text('Bienvenido a EldenRing Wiki')),
+    HomePage(), // <-- Cambia esto por tu nuevo HomePage
     BossesPage(),
     CreaturesPage(),
     SettingsPage(),
@@ -88,24 +89,25 @@ class _MainMenuState extends State<MainMenu> {
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(Icons.home, color: Colors.deepPurple), // Cambiado a morado
             label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shield),
+            icon: Icon(Icons.shield, color: Colors.deepPurple), // Cambiado a morado
             label: 'Jefes',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.pets),
+            icon: Icon(Icons.pets, color: Colors.deepPurple), // Cambiado a morado
             label: 'Criaturas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
+            icon: Icon(Icons.settings, color: Colors.deepPurple), // Cambiado a morado
             label: 'Preferencias',
           ),
         ],
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.deepPurple,
+        unselectedItemColor: Colors.deepPurple, // Opcional: morado para no seleccionados
         onTap: _onItemTapped,
       ),
     );
