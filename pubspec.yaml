@@ -64,6 +64,14 @@ flutter:
   assets:
     - images/logo elden.png
 
+  fonts:
+    - family: Centaur
+      fonts:
+        - asset: assets/fonts/Centaur.ttf
+          weight: 400
+        - asset: assets/fonts/Centaur-Bold.ttf
+          weight: 700
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
@@ -75,6 +83,7 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
+    
   # fonts:
   #   - family: Schyler
   #     fonts:

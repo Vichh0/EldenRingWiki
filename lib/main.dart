@@ -41,6 +41,7 @@ class MyApp extends StatelessWidget {
         return MaterialApp(
           title: 'EldenRing Wiki',
           theme: ThemeData(
+            fontFamily: 'Centaur',
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.deepPurple,
               brightness: Brightness.light,
@@ -51,6 +52,7 @@ class MyApp extends StatelessWidget {
             useMaterial3: true,
           ),
           darkTheme: ThemeData(
+            fontFamily: 'Centaur',
             colorScheme: ColorScheme.fromSeed(
               seedColor: Colors.deepPurple,
               brightness: Brightness.dark,
