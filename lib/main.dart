@@ -6,7 +6,6 @@ import 'package:provider/provider.dart';
 
 import 'services/theme_provider.dart';
 import 'Pages/Home.dart';
-import 'Pages/Home.dart';
 import 'Pages/splahsscreen.dart';
 
 void main() {
