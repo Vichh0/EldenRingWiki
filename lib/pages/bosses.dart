@@ -213,22 +213,36 @@ class _BossesPageState extends State<BossesPage> {
                   spacing: 16,
                   children: [
                     ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black, // <-- Cambia color del texto e ícono
+                        backgroundColor: const Color(0xFFD9B157), // opcional: color de fondo claro
+                      ),
                       onPressed: () {
                         _incrementVictory(jefeId);
                         setStateDialog(() {});
                         setState(() {});
                       },
                       icon: const Icon(Icons.emoji_events, color: Colors.yellow),
-                      label: Text('Victorias: ${victories[jefeId] ?? 0}'),
+                      label: Text(
+                        'Victorias: ${victories[jefeId] ?? 0}',
+                        style: const TextStyle(color: Colors.black), // <-- Texto visible
+                      ),
                     ),
                     ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: const Color(0xFFD9B157),
+                      ),
                       onPressed: () {
                         _incrementDefeat(jefeId);
                         setStateDialog(() {});
                         setState(() {});
                       },
                       icon: const Icon(Icons.close, color: Colors.red),
-                      label: Text('Derrotas: ${defeats[jefeId] ?? 0}'),
+                      label: Text(
+                        'Derrotas: ${defeats[jefeId] ?? 0}',
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     ),
                   ],
                 ),
@@ -239,7 +253,13 @@ class _BossesPageState extends State<BossesPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
+            child: const Text(
+              'Cerrar',
+              style: TextStyle(
+                color: Colors.black, // Usa negro u otro color oscuro visible
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -324,6 +344,7 @@ class _BossesPageState extends State<BossesPage> {
                                 final jefe = filteredJefes[index];
                                 final jefeId = jefe['id'] ?? jefe['name'];
                                 return Card(
+                                  color: const Color(0xFFD6C77A), 
                                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   elevation: 6,
                                   child: Padding(
@@ -332,6 +353,7 @@ class _BossesPageState extends State<BossesPage> {
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         ListTile(
+                                          tileColor: const Color(0xFFD6C77A), 
                                           contentPadding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                                           leading: (jefe['image'] != null && jefe['image'].toString().isNotEmpty)
                                               ? Image.network(

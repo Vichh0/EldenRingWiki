@@ -244,22 +244,36 @@ class _CreaturesPageState extends State<CreaturesPage> {
                   spacing: 16,
                   children: [
                     ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Color(0xFFD9B157),
+                      ),
                       onPressed: () {
                         _incrementVictory(criaturaId);
                         setStateDialog(() {});
-                        setState(() {}); // Actualiza la lista principal también
+                        setState(() {});
                       },
                       icon: const Icon(Icons.emoji_events, color: Colors.yellow),
-                      label: Text('Victorias: ${victories[criaturaId] ?? 0}'),
+                      label: Text(
+                        'Victorias: ${victories[criaturaId] ?? 0}',
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     ),
                     ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.black,
+                        backgroundColor: Color(0xFFD9B157),
+                      ),
                       onPressed: () {
                         _incrementDefeat(criaturaId);
                         setStateDialog(() {});
                         setState(() {});
                       },
                       icon: const Icon(Icons.close, color: Colors.red),
-                      label: Text('Derrotas: ${defeats[criaturaId] ?? 0}'),
+                      label: Text(
+                        'Derrotas: ${defeats[criaturaId] ?? 0}',
+                        style: const TextStyle(color: Colors.black),
+                      ),
                     ),
                   ],
                 ),
@@ -270,7 +284,13 @@ class _CreaturesPageState extends State<CreaturesPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cerrar'),
+            child: const Text(
+              'Cerrar',
+              style: TextStyle(
+                color: Colors.black, // Texto visible
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -348,6 +368,7 @@ class _CreaturesPageState extends State<CreaturesPage> {
                                 final criatura = filteredCriaturas[index];
                                 final criaturaId = criatura['id'] ?? criatura['name'];
                                 return Card(
+                                  color: const Color(0xFFD6C77A), 
                                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                   elevation: 6,
                                   child: Padding(

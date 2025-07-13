@@ -3,9 +3,6 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
-
-import '../services/theme_provider.dart';
 import 'bosses.dart';
 import 'infocriaturas.dart';
 import 'config.dart';
@@ -185,27 +182,43 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
             )
           : _pages[_selectedIndex - 1],
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
+        items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
-            icon: Icon(Icons.home, color: Colors.deepPurple),
+            icon: Image.asset(
+              'assets/icons/inicio.png',
+              height: 24,
+              width: 24,
+            ),
             label: 'Inicio',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.shield, color: Colors.deepPurple),
+            icon: Image.asset(
+              'assets/icons/calavera_jefe.png',
+              height: 24,
+              width: 24,
+            ),
             label: 'Jefes',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.pets, color: Colors.deepPurple),
+            icon: Image.asset(
+              'assets/icons/calavera_criatura.png',
+              height: 24,
+              width: 24,
+            ),
             label: 'Criaturas',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.settings, color: Colors.deepPurple),
+            icon: Image.asset(
+              'assets/icons/ajustes.png',
+              height: 24,
+              width: 24,
+            ),
             label: 'Preferencias',
           ),
         ],
         currentIndex: _selectedIndex,
-        selectedItemColor: Colors.deepPurple,
-        unselectedItemColor: Colors.deepPurple,
+        selectedItemColor: const Color.fromARGB(255, 0, 0, 0),
+        unselectedItemColor: const Color.fromARGB(255, 0, 0, 0),
         onTap: _onItemTapped,
       ),
     );

@@ -30,7 +30,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -63,14 +62,15 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - images/logo elden.png
-
+    - assets/icons/calavera_jefe.png
+    - assets/icons/calavera_criatura.png
+    - assets/icons/inicio.png
+    - assets/icons/ajustes.png
   fonts:
-    - family: Centaur
+    - family: CENTAUR
       fonts:
-        - asset: assets/fonts/Centaur.ttf
+        - asset: assets/fonts/CENTAUR.ttf
           weight: 400
-        - asset: assets/fonts/Centaur-Bold.ttf
-          weight: 700
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
